@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Goblin",
+    "hp": 50,
+    "attack": 10,
+    "loot": ["Gold Coin", "Dagger"]
+  },
+  {
+    "id": 2,
+    "name": "Orc",
+    "hp": 120,
+    "attack": 25,
+    "loot": ["Gold Coin", "Axe"]
+  }
+]
