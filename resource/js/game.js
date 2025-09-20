@@ -1,6 +1,7 @@
 let player = {
   hp: 100,
-  attack: 20
+  attack: 20,
+  alive: true
 };
 
 let enemy = null;
@@ -10,33 +11,40 @@ fetch('enemies.json')
   .then(res => res.json())
   .then(data => {
     enemy = data[Math.floor(Math.random() * data.length)];
+    enemy.alive = true; // tambahkan status hidup
     document.getElementById('enemy-name').innerText = enemy.name;
     document.getElementById('enemy-hp').innerText = enemy.hp;
   });
 
 document.getElementById('attack-btn').addEventListener('click', () => {
-  if (!enemy) return;
+  if (!enemy || !enemy.alive || !player.alive) return; 
+  // kalau salah satu mati → tidak bisa menyerang
 
   // Player menyerang musuh
   enemy.hp -= player.attack;
-  log(`Player menyerang ${enemy.name} sebesar ${player.attack} damage`);
-
   if (enemy.hp <= 0) {
+    enemy.hp = 0;
+    enemy.alive = false;
+    document.getElementById('enemy-hp').innerText = enemy.hp;
+    log(`Player menyerang ${enemy.name} sebesar ${player.attack} damage`);
     log(`${enemy.name} dikalahkan! Loot: ${enemy.loot.join(', ')}`);
-    document.getElementById('enemy-hp').innerText = 0;
     return;
   }
-
   document.getElementById('enemy-hp').innerText = enemy.hp;
+  log(`Player menyerang ${enemy.name} sebesar ${player.attack} damage`);
 
-  // Musuh menyerang player
-  player.hp -= enemy.attack;
-  log(`${enemy.name} menyerang Player sebesar ${enemy.attack} damage`);
-  document.getElementById('player-hp').innerText = player.hp;
-
-  if (player.hp <= 0) {
-    log(`Player kalah! Game over.`);
-    document.getElementById('player-hp').innerText = 0;
+  // Musuh menyerang player (hanya kalau player masih hidup)
+  if (player.alive) {
+    player.hp -= enemy.attack;
+    if (player.hp <= 0) {
+      player.hp = 0;
+      player.alive = false;
+      log(`${enemy.name} menyerang Player sebesar ${enemy.attack} damage`);
+      log(`Player kalah! Game over.`);
+    } else {
+      log(`${enemy.name} menyerang Player sebesar ${enemy.attack} damage`);
+    }
+    document.getElementById('player-hp').innerText = player.hp;
   }
 });
 
