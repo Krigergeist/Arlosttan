@@ -148,7 +148,7 @@
             return {
                 page: 'landing',
                 player: { hp: 100, attack: 20 },
-                enemy: { name: "Goblin", hp: 50, attack: 10 },
+                enemy: null,
                 messages: [],
                 actionChosen: null,
                 regions: [
@@ -173,11 +173,14 @@
                     this.page = 'battle';
                 },
 
-                // Reset battle
+                // Reset battle → pilih musuh random dari GameDB
                 resetBattle() {
                     this.player.hp = 100;
-                    this.enemy = { name: "Goblin", hp: 50, attack: 10 };
-                    this.messages = ["Pertarungan dimulai!"];
+
+                    const randIndex = Math.floor(Math.random() * GameDB.enemies.length);
+                    this.enemy = JSON.parse(JSON.stringify(GameDB.enemies[randIndex]));
+
+                    this.messages = [`Pertarungan dimulai! Musuh muncul: ${this.enemy.name}`];
                     this.actionChosen = null;
                 },
 
