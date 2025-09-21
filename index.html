@@ -76,6 +76,15 @@
             </div>
         </div>
 
+        <!-- Tombol Save & Load -->
+        <div class="flex justify-between mt-3">
+            <button class="border-2 border-black bg-green-200 px-2 py-1 hover:bg-green-300"
+                @click="saveGame">Save</button>
+            <input type="file" id="loadFile" class="hidden" @change="loadGame($event)">
+            <button class="border-2 border-black bg-blue-200 px-2 py-1 hover:bg-blue-300"
+                @click="document.getElementById('loadFile').click()">Load</button>
+        </div>
+
     </div>
 
     <!-- Script Game -->
@@ -105,6 +114,40 @@
                 doDefend(type) {
                     this.messages.push(`Player bertahan dengan ${type}`);
                     this.actionChosen = null;
+                },
+
+                // === SAVE GAME ===
+                saveGame() {
+                    const data = {
+                        player: this.player,
+                        enemy: this.enemy
+                    };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "gameData.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.messages.push("Game berhasil disimpan!");
+                },
+
+                // === LOAD GAME ===
+                loadGame(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            this.player = data.player;
+                            this.enemy = data.enemy;
+                            this.messages.push("Game berhasil dimuat!");
+                        } catch (err) {
+                            this.messages.push("Gagal memuat data.");
+                        }
+                    };
+                    reader.readAsText(file);
                 }
             }
         }
