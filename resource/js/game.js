@@ -1,55 +1,41 @@
-let player = {
-  hp: 100,
-  attack: 20,
-  alive: true
-};
+function rpgGame() {
+  return {
+    player: { 
+      hp: 100, 
+      attack: 20, 
+      equipment: GameDB.equipments[0] // Wooden Sword default
+    },
+    enemy: { ...GameDB.enemies[0] }, // Musuh pertama (Goblin)
+    messages: ["Pertarungan dimulai!"],
+    actionChosen: null,
 
-let enemy = null;
+    chooseAction(type) {
+      this.actionChosen = type;
+      this.messages.push(`Player memilih aksi: ${type}`);
+    },
 
-// Ambil data musuh dari JSON
-fetch('enemies.json')
-  .then(res => res.json())
-  .then(data => {
-    enemy = data[Math.floor(Math.random() * data.length)];
-    enemy.alive = true; // tambahkan status hidup
-    document.getElementById('enemy-name').innerText = enemy.name;
-    document.getElementById('enemy-hp').innerText = enemy.hp;
-  });
+    doAttack(type) {
+      let damage = this.player.attack + (this.player.equipment?.attack || 0);
+      this.enemy.hp -= damage;
+      if (this.enemy.hp < 0) this.enemy.hp = 0;
 
-document.getElementById('attack-btn').addEventListener('click', () => {
-  if (!enemy || !enemy.alive || !player.alive) return; 
-  // kalau salah satu mati → tidak bisa menyerang
+      this.messages.push(`Player menyerang dengan ${type}, damage ${damage}`);
+      if (this.enemy.hp <= 0) {
+        this.messages.push(`${this.enemy.name} dikalahkan!`);
+        this.messages.push(`Loot: ${this.enemy.drops.join(", ")}`);
+      }
+      this.actionChosen = null;
+    },
 
-  // Player menyerang musuh
-  enemy.hp -= player.attack;
-  if (enemy.hp <= 0) {
-    enemy.hp = 0;
-    enemy.alive = false;
-    document.getElementById('enemy-hp').innerText = enemy.hp;
-    log(`Player menyerang ${enemy.name} sebesar ${player.attack} damage`);
-    log(`${enemy.name} dikalahkan! Loot: ${enemy.loot.join(', ')}`);
-    return;
-  }
-  document.getElementById('enemy-hp').innerText = enemy.hp;
-  log(`Player menyerang ${enemy.name} sebesar ${player.attack} damage`);
+    doDefend(type) {
+      this.messages.push(`Player bertahan dengan ${type}`);
+      this.actionChosen = null;
+    },
 
-  // Musuh menyerang player (hanya kalau player masih hidup)
-  if (player.alive) {
-    player.hp -= enemy.attack;
-    if (player.hp <= 0) {
-      player.hp = 0;
-      player.alive = false;
-      log(`${enemy.name} menyerang Player sebesar ${enemy.attack} damage`);
-      log(`Player kalah! Game over.`);
-    } else {
-      log(`${enemy.name} menyerang Player sebesar ${enemy.attack} damage`);
+    nextEnemy() {
+      const randomEnemy = GameDB.enemies[Math.floor(Math.random() * GameDB.enemies.length)];
+      this.enemy = { ...randomEnemy };
+      this.messages.push(`Musuh baru muncul: ${this.enemy.name}!`);
     }
-    document.getElementById('player-hp').innerText = player.hp;
-  }
-});
-
-function log(message) {
-  const logDiv = document.getElementById('log');
-  logDiv.innerHTML += `<p>${message}</p>`;
-  logDiv.scrollTop = logDiv.scrollHeight;
+  };
 }
