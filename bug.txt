@@ -1,4 +1,4 @@
-belum ada restart button yang benar
-ui masih burik
+belum ada restart button yang benar --
+ui masih burik 
 belum ada map
 musuh belum banyak
