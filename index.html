@@ -1,31 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="rpgGame()">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web RPG Game</title>
-    <link rel="stylesheet" href="resource/css/style.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs" defer></script>
 </head>
 
-<body>
-    <h1>Web RPG Game</h1>
+<body class="bg-yellow-50 font-mono flex items-center justify-center min-h-screen">
 
-    <div id="player-stats">
-        <h2>Player</h2>
-        <p>HP: <span id="player-hp">100</span></p>
-        <button id="attack-btn">Attack</button>
+    <div class="w-[500px] border-4 border-black bg-yellow-50 p-3 space-y-3">
+
+        <!-- Kotak Pesan -->
+        <div class="border-2 border-black bg-white h-24 overflow-y-auto p-2 text-sm" id="log">
+            <template x-for="msg in messages">
+                <p x-text="msg"></p>
+            </template>
+        </div>
+
+        <!-- Arena Pertarungan -->
+        <div class="flex justify-between">
+            <div class="text-center w-1/2">
+                <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">[Player]</div>
+                <p>Player</p>
+            </div>
+            <div class="text-center w-1/2">
+                <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">[Enemy]</div>
+                <p x-text="enemy.name"></p>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="flex justify-between">
+            <div class="border-2 border-black bg-white w-1/2 text-center p-1">
+                HP: <span x-text="player.hp"></span>
+            </div>
+            <div class="border-2 border-black bg-white w-1/2 text-center p-1">
+                HP: <span x-text="enemy.hp"></span>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi Player -->
+        <div class="flex gap-3">
+            <div class="w-1/2 flex flex-col gap-1">
+                <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                    @click="chooseAction('attack')">Attack</button>
+                <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                    @click="chooseAction('defend')">Defend</button>
+            </div>
+
+            <div class="w-1/2 flex flex-col gap-1">
+                <template x-if="actionChosen === 'attack'">
+                    <div class="flex flex-col gap-1">
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="doAttack('Sword')">Sword</button>
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="doAttack('Magic')">Magic</button>
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="doAttack('Skill')">Skill</button>
+                    </div>
+                </template>
+
+                <template x-if="actionChosen === 'defend'">
+                    <div class="flex flex-col gap-1">
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="doDefend('Shield')">Shield</button>
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="doDefend('Dodge')">Dodge</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
     </div>
 
-    <div id="enemy-container">
-        <h2>Enemy</h2>
-        <p id="enemy-name"></p>
-        <p>HP: <span id="enemy-hp"></span></p>
-    </div>
+    <!-- Script Game -->
+    <script>
+        function rpgGame() {
+            return {
+                player: { hp: 100, attack: 20 },
+                enemy: { name: "Goblin", hp: 50, attack: 10 },
+                messages: ["Pertarungan dimulai!"],
+                actionChosen: null,
 
-    <div id="log"></div>
+                chooseAction(type) {
+                    this.actionChosen = type;
+                    this.messages.push(`Player memilih aksi: ${type}`);
+                },
 
-    <script src="resource/js/game.js"></script>
+                doAttack(type) {
+                    this.enemy.hp -= this.player.attack;
+                    if (this.enemy.hp < 0) this.enemy.hp = 0;
+                    this.messages.push(`Player menyerang dengan ${type}, damage ${this.player.attack}`);
+                    if (this.enemy.hp <= 0) {
+                        this.messages.push(`${this.enemy.name} dikalahkan!`);
+                    }
+                    this.actionChosen = null;
+                },
+
+                doDefend(type) {
+                    this.messages.push(`Player bertahan dengan ${type}`);
+                    this.actionChosen = null;
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
