@@ -1,89 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" x-data="rpgGame()">
+<html lang="en" x-data="rpgGame()" x-init="init()">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web RPG Game</title>
-    <!-- Tailwind CSS -->
+    <title>Arlosttan RPG</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
     <script src="https://unpkg.com/alpinejs" defer></script>
+    <link rel="icon" href="resource/img/sword.png">
 </head>
 
 <body class="bg-yellow-50 font-mono flex items-center justify-center min-h-screen">
 
-    <div class="w-[500px] border-4 border-black bg-yellow-50 p-3 space-y-3">
+    <div class="w-[600px] border-4 border-black bg-yellow-50 p-3 space-y-3">
 
-        <!-- Kotak Pesan -->
-        <div class="border-2 border-black bg-white h-24 overflow-y-auto p-2 text-sm" x-ref="logBox">
-            <template x-for="(msg, i) in messages" :key="i">
-                <p x-text="msg"></p>
-            </template>
-        </div>
+        <!-- === Landing Page === -->
+        <template x-if="page === 'landing'">
+            <div class="text-center space-y-5">
+                <img src="resource/img/sword.png" class="mx-auto w-20 h-20">
+                <h1 class="text-3xl font-bold">Arlostan RPG</h1>
+                <p class="text-gray-700">Petualangan turn-based klasik di dunia penuh tantangan.</p>
+                <button class="border-2 border-black bg-blue-300 px-4 py-2 hover:bg-blue-400"
+                    @click="page = 'map'">Start Game</button>
+            </div>
+        </template>
 
-        <!-- Arena Pertarungan -->
-        <div class="flex justify-between gap-3">
-            <div class="text-center w-1/2">
-                <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">[Player]</div>
-                <p>Player</p>
-            </div>
-            <div class="text-center w-1/2">
-                <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">[Enemy]</div>
-                <p x-text="enemy.name"></p>
-            </div>
-        </div>
+        <!-- === Map Page === -->
+        <template x-if="page === 'map'">
+            <div class="space-y-4">
+                <h2 class="text-xl font-bold">Pilih Region</h2>
 
-        <!-- Status Bar -->
-        <div class="flex justify-between gap-3">
-            <div class="border-2 border-black bg-white w-1/2 text-center p-1">
-                HP: <span x-text="player.hp"></span>
-            </div>
-            <div class="border-2 border-black bg-white w-1/2 text-center p-1">
-                HP: <span x-text="enemy.hp"></span>
-            </div>
-        </div>
-
-        <!-- Tombol Aksi Player -->
-        <div class="flex gap-3" style="max-height: 88px;">
-            <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
-                <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                    @click="chooseAction('attack')">Attack</button>
-                <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                    @click="chooseAction('defend')">Defend</button>
-            </div>
-            
-            <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
-                <template x-if="actionChosen === 'attack'">
-                    <div class="flex flex-col gap-1">
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Sword')">Sword</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Magic')">Magic</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Skill')">Skill</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Bow')">Bow</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Spear')">Spear</button>
+                <!-- Region 1 -->
+                <div>
+                    <h3 class="font-semibold">Region 1 (Lv 1-40)</h3>
+                    <div class="grid grid-cols-5 gap-2 mt-2">
+                        <template x-for="(stage, i) in regions[0]" :key="i">
+                            <div class="w-10 h-10 flex items-center justify-center border-2 cursor-pointer" :class="{
+                  'bg-white': stage.status==='locked',
+                  'bg-green-300': stage.status==='cleared',
+                  'border-blue-500': stage.status==='next'
+                }" @click="enterStage(0,i)">
+                                <span x-text="i+1"></span>
+                            </div>
+                        </template>
                     </div>
-                </template>
-        
-                <template x-if="actionChosen === 'defend'">
-                    <div class="flex flex-col gap-1">
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Shield')">Shield</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Dodge')">Dodge</button>
-                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Magic Barrier')">Magic
-                            Barrier</button>
+                </div>
+
+                <!-- Region 2 -->
+                <div>
+                    <h3 class="font-semibold">Region 2 (Lv 41-80)</h3>
+                    <div class="grid grid-cols-5 gap-2 mt-2">
+                        <template x-for="(stage, i) in regions[1]" :key="i">
+                            <div class="w-10 h-10 flex items-center justify-center border-2 cursor-pointer" :class="{
+                  'bg-white': stage.status==='locked',
+                  'bg-green-300': stage.status==='cleared',
+                  'border-blue-500': stage.status==='next'
+                }" @click="enterStage(1,i)">
+                                <span x-text="i+41"></span>
+                            </div>
+                        </template>
                     </div>
-                </template>
+                </div>
             </div>
-        </div>
+        </template>
 
+        <!-- === Battlefield Page === -->
+        <template x-if="page === 'battle'">
+            <div class="space-y-3">
+                <!-- Log -->
+                <div class="border-2 border-black bg-white h-24 overflow-y-auto p-2 text-sm" x-ref="logBox">
+                    <template x-for="(msg,i) in messages" :key="i">
+                        <p x-text="msg"></p>
+                    </template>
+                </div>
 
-        <!-- Tombol Save & Load -->
-        <div class="flex justify-between mt-3">
-            <button class="border-2 border-black bg-green-200 px-2 py-1 hover:bg-green-300"
-                @click="saveGame">Save</button>
-            <input type="file" id="loadFile" class="hidden" @change="loadGame($event)">
-            <button class="border-2 border-black bg-blue-200 px-2 py-1 hover:bg-blue-300"
-                @click="document.getElementById('loadFile').click()">Load</button>
-        </div>
+                <!-- Arena -->
+                <div class="flex justify-between">
+                    <div class="text-center w-1/2">
+                        <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">
+                            [Player]</div>
+                        <p>Player</p>
+                    </div>
+                    <div class="text-center w-1/2">
+                        <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">
+                            [Enemy]</div>
+                        <p x-text="enemy.name"></p>
+                    </div>
+                </div>
+
+                <!-- HP -->
+                <div class="flex justify-between">
+                    <div class="border-2 border-black bg-white w-1/2 text-center p-1">
+                        HP: <span x-text="player.hp"></span>
+                    </div>
+                    <div class="border-2 border-black bg-white w-1/2 text-center p-1">
+                        HP: <span x-text="enemy.hp"></span>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Player -->
+                <div class="flex gap-3" style="max-height: 88px;">
+                    <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="chooseAction('attack')">Attack</button>
+                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
+                            @click="chooseAction('defend')">Defend</button>
+                    </div>
+                
+                    <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
+                        <template x-if="actionChosen === 'attack'">
+                            <div class="flex flex-col gap-1">
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Sword')">Sword</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Magic')">Magic</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Skill')">Skill</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Bow')">Bow</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Spear')">Spear</button>
+                            </div>
+                        </template>
+                
+                        <template x-if="actionChosen === 'defend'">
+                            <div class="flex flex-col gap-1">
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Shield')">Shield</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Dodge')">Dodge</button>
+                                <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Magic Barrier')">Magic
+                                    Barrier</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <!-- Tombol Save & Load -->
+                <div class="flex justify-between mt-3">
+                    <button class="border-2 border-black bg-green-200 px-2 py-1 hover:bg-green-300" 
+                    @click="saveGame">Save</button>
+                    <input type="file" id="loadFile" class="hidden" @change="loadGame($event)">
+                    <button class="border-2 border-black bg-blue-200 px-2 py-1 hover:bg-blue-300"
+                        @click="document.getElementById('loadFile').click()">Load</button>
+                </div>
+            </div>
+        </template>
 
     </div>
     <!-- Script Game -->
@@ -91,101 +145,120 @@
     <script src="resource/js/game.js"></script>
     <script>
         function rpgGame() {
-                return {
-                    player: { hp: 100, attack: 20 },
-                    enemy: { name: "Goblin", hp: 50, attack: 10 },
-                    messages: ["Pertarungan dimulai!"],
-                    actionChosen: null,
+            return {
+                page: 'landing',
+                player: { hp: 100, attack: 20 },
+                enemy: { name: "Goblin", hp: 50, attack: 10 },
+                messages: [],
+                actionChosen: null,
+                regions: [
+                    Array.from({ length: 5 }, (_, i) => ({ status: i === 0 ? 'next' : 'locked' })), // Region 1
+                    Array.from({ length: 5 }, () => ({ status: 'locked' })) // Region 2
+                ],
+                currentRegion: null,
+                currentStage: null,
 
-                    init() {
-                        // Auto scroll log setiap kali ada pesan baru
-                        this.$watch("messages", () => {
-                            this.$refs.logBox.scrollTop = this.$refs.logBox.scrollHeight;
-                        });
-                    },
+                init() {
+                    this.$watch("messages", () => {
+                        this.$refs.logBox && (this.$refs.logBox.scrollTop = this.$refs.logBox.scrollHeight);
+                    });
+                },
 
-                    chooseAction(type) {
-                        this.actionChosen = type;
-                        this.messages.push(`Player memilih aksi: ${type}`);
-                    },
+                // Map → Battle
+                enterStage(region, stage) {
+                    if (this.regions[region][stage].status !== 'next') return;
+                    this.currentRegion = region;
+                    this.currentStage = stage;
+                    this.resetBattle();
+                    this.page = 'battle';
+                },
 
-                    doAttack(type) {
-                        if (this.enemy.hp <= 0 || this.player.hp <= 0) return;
+                // Reset battle
+                resetBattle() {
+                    this.player.hp = 100;
+                    this.enemy = { name: "Goblin", hp: 50, attack: 10 };
+                    this.messages = ["Pertarungan dimulai!"];
+                    this.actionChosen = null;
+                },
 
-                        this.enemy.hp -= this.player.attack;
-                        if (this.enemy.hp < 0) this.enemy.hp = 0;
-
-                        this.messages.push(`Player menyerang dengan ${type}, damage ${this.player.attack}`);
-
-                        if (this.enemy.hp <= 0) {
-                            this.messages.push(`${this.enemy.name} dikalahkan!`);
-                        } else {
-                            this.enemyTurn();
-                        }
-
-                        this.actionChosen = null;
-                    },
-
-                    doDefend(type) {
-                        if (this.player.hp <= 0 || this.enemy.hp <= 0) return;
-
-                        this.messages.push(`Player bertahan dengan ${type}`);
-
-                        // Efek defend sederhana: kurangi damage musuh jadi setengah
-                        this.enemyTurn(true);
-
-                        this.actionChosen = null;
-                    },
-
-                    enemyTurn(isDefended = false) {
-                        if (this.enemy.hp <= 0) return;
-
-                        let dmg = this.enemy.attack;
-                        if (isDefended) dmg = Math.floor(dmg / 2);
-
-                        this.player.hp -= dmg;
-                        if (this.player.hp < 0) this.player.hp = 0;
-
-                        this.messages.push(`${this.enemy.name} menyerang! Player menerima ${dmg} damage.`);
-
-                        if (this.player.hp <= 0) {
-                            this.messages.push("Player kalah... Game Over!");
-                        }
-                    },
-
-                    saveGame() {
-                        const data = {
-                            player: this.player,
-                            enemy: this.enemy
-                        };
-                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "gameData.json";
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        this.messages.push("Game berhasil disimpan!");
-                    },
-
-                    loadGame(event) {
-                        const file = event.target.files[0];
-                        if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            try {
-                                const data = JSON.parse(e.target.result);
-                                this.player = data.player;
-                                this.enemy = data.enemy;
-                                this.messages.push("Game berhasil dimuat!");
-                            } catch (err) {
-                                this.messages.push("Gagal memuat data.");
-                            }
-                        };
-                        reader.readAsText(file);
+                // Battle actions
+                chooseAction(type) {
+                    this.actionChosen = type;
+                    this.messages.push(`Player memilih ${type}`);
+                },
+                doAttack(type) {
+                    if (this.enemy.hp <= 0) return;
+                    this.enemy.hp -= this.player.attack;
+                    if (this.enemy.hp < 0) this.enemy.hp = 0;
+                    this.messages.push(`Player menyerang dengan ${type}, ${this.player.attack} damage`);
+                    if (this.enemy.hp <= 0) {
+                        this.messages.push("Musuh dikalahkan!");
+                        this.stageCleared();
+                    } else {
+                        this.enemyTurn();
                     }
+                    this.actionChosen = null;
+                },
+                doDefend(type) {
+                    this.messages.push(`Player bertahan dengan ${type}`);
+                    this.enemyTurn(true);
+                    this.actionChosen = null;
+                },
+                enemyTurn(defended = false) {
+                    if (this.enemy.hp <= 0) return;
+                    let dmg = defended ? Math.floor(this.enemy.attack / 2) : this.enemy.attack;
+                    this.player.hp -= dmg;
+                    if (this.player.hp < 0) this.player.hp = 0;
+                    this.messages.push(`${this.enemy.name} menyerang! Player -${dmg} HP`);
+                    if (this.player.hp <= 0) {
+                        this.messages.push("Player kalah... Game Over!");
+                        this.page = 'map';
+                    }
+                },
+
+                saveGame() {
+                    const data = {
+                        player: this.player,
+                        enemy: this.enemy
+                    };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "gameData.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.messages.push("Game berhasil disimpan!");
+                },
+
+                loadGame(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            this.player = data.player;
+                            this.enemy = data.enemy;
+                            this.messages.push("Game berhasil dimuat!");
+                        } catch (err) {
+                            this.messages.push("Gagal memuat data.");
+                        }
+                    };
+                    reader.readAsText(file);
+                },
+
+                // Stage selesai
+                stageCleared() {
+                    this.regions[this.currentRegion][this.currentStage].status = 'cleared';
+                    let next = this.currentStage + 1;
+                    if (next < this.regions[this.currentRegion].length) {
+                        this.regions[this.currentRegion][next].status = 'next';
+                    }
+                    this.page = 'map';
                 }
             }
+        }
     </script>
 </body>
 
