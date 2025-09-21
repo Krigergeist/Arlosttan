@@ -16,14 +16,14 @@
     <div class="w-[500px] border-4 border-black bg-yellow-50 p-3 space-y-3">
 
         <!-- Kotak Pesan -->
-        <div class="border-2 border-black bg-white h-24 overflow-y-auto p-2 text-sm" id="log">
-            <template x-for="msg in messages">
+        <div class="border-2 border-black bg-white h-24 overflow-y-auto p-2 text-sm" x-ref="logBox">
+            <template x-for="(msg, i) in messages" :key="i">
                 <p x-text="msg"></p>
             </template>
         </div>
 
         <!-- Arena Pertarungan -->
-        <div class="flex justify-between">
+        <div class="flex justify-between gap-3">
             <div class="text-center w-1/2">
                 <div class="border-2 border-black bg-gray-200 h-20 flex items-center justify-center mb-1">[Player]</div>
                 <p>Player</p>
@@ -35,7 +35,7 @@
         </div>
 
         <!-- Status Bar -->
-        <div class="flex justify-between">
+        <div class="flex justify-between gap-3">
             <div class="border-2 border-black bg-white w-1/2 text-center p-1">
                 HP: <span x-text="player.hp"></span>
             </div>
@@ -45,36 +45,36 @@
         </div>
 
         <!-- Tombol Aksi Player -->
-        <div class="flex gap-3">
-            <div class="w-1/2 flex flex-col gap-1">
+        <div class="flex gap-3" style="max-height: 88px;">
+            <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
                 <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
                     @click="chooseAction('attack')">Attack</button>
                 <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
                     @click="chooseAction('defend')">Defend</button>
             </div>
-
-            <div class="w-1/2 flex flex-col gap-1">
+            
+            <div class="w-1/2 flex flex-col gap-1 max-h-24 overflow-y-auto border-2 border-black p-1 bg-white">
                 <template x-if="actionChosen === 'attack'">
                     <div class="flex flex-col gap-1">
-                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                            @click="doAttack('Sword')">Sword</button>
-                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                            @click="doAttack('Magic')">Magic</button>
-                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                            @click="doAttack('Skill')">Skill</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Sword')">Sword</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Magic')">Magic</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Skill')">Skill</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Bow')">Bow</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doAttack('Spear')">Spear</button>
                     </div>
                 </template>
-
+        
                 <template x-if="actionChosen === 'defend'">
                     <div class="flex flex-col gap-1">
-                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                            @click="doDefend('Shield')">Shield</button>
-                        <button class="border-2 border-black bg-white p-1 hover:bg-gray-200"
-                            @click="doDefend('Dodge')">Dodge</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Shield')">Shield</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Dodge')">Dodge</button>
+                        <button class="border border-black p-1 hover:bg-gray-200" @click="doDefend('Magic Barrier')">Magic
+                            Barrier</button>
                     </div>
                 </template>
             </div>
         </div>
+
 
         <!-- Tombol Save & Load -->
         <div class="flex justify-between mt-3">
@@ -91,67 +91,101 @@
     <script src="resource/js/game.js"></script>
     <script>
         function rpgGame() {
-            return {
-                player: { hp: 100, attack: 20 },
-                enemy: { name: "Goblin", hp: 50, attack: 10 },
-                messages: ["Pertarungan dimulai!"],
-                actionChosen: null,
+                return {
+                    player: { hp: 100, attack: 20 },
+                    enemy: { name: "Goblin", hp: 50, attack: 10 },
+                    messages: ["Pertarungan dimulai!"],
+                    actionChosen: null,
 
-                chooseAction(type) {
-                    this.actionChosen = type;
-                    this.messages.push(`Player memilih aksi: ${type}`);
-                },
+                    init() {
+                        // Auto scroll log setiap kali ada pesan baru
+                        this.$watch("messages", () => {
+                            this.$refs.logBox.scrollTop = this.$refs.logBox.scrollHeight;
+                        });
+                    },
 
-                doAttack(type) {
-                    this.enemy.hp -= this.player.attack;
-                    if (this.enemy.hp < 0) this.enemy.hp = 0;
-                    this.messages.push(`Player menyerang dengan ${type}, damage ${this.player.attack}`);
-                    if (this.enemy.hp <= 0) {
-                        this.messages.push(`${this.enemy.name} dikalahkan!`);
-                    }
-                    this.actionChosen = null;
-                },
+                    chooseAction(type) {
+                        this.actionChosen = type;
+                        this.messages.push(`Player memilih aksi: ${type}`);
+                    },
 
-                doDefend(type) {
-                    this.messages.push(`Player bertahan dengan ${type}`);
-                    this.actionChosen = null;
-                },
+                    doAttack(type) {
+                        if (this.enemy.hp <= 0 || this.player.hp <= 0) return;
 
-                // === SAVE GAME ===
-                saveGame() {
-                    const data = {
-                        player: this.player,
-                        enemy: this.enemy
-                    };
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "gameData.json";
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    this.messages.push("Game berhasil disimpan!");
-                },
+                        this.enemy.hp -= this.player.attack;
+                        if (this.enemy.hp < 0) this.enemy.hp = 0;
 
-                // === LOAD GAME ===
-                loadGame(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            this.player = data.player;
-                            this.enemy = data.enemy;
-                            this.messages.push("Game berhasil dimuat!");
-                        } catch (err) {
-                            this.messages.push("Gagal memuat data.");
+                        this.messages.push(`Player menyerang dengan ${type}, damage ${this.player.attack}`);
+
+                        if (this.enemy.hp <= 0) {
+                            this.messages.push(`${this.enemy.name} dikalahkan!`);
+                        } else {
+                            this.enemyTurn();
                         }
-                    };
-                    reader.readAsText(file);
+
+                        this.actionChosen = null;
+                    },
+
+                    doDefend(type) {
+                        if (this.player.hp <= 0 || this.enemy.hp <= 0) return;
+
+                        this.messages.push(`Player bertahan dengan ${type}`);
+
+                        // Efek defend sederhana: kurangi damage musuh jadi setengah
+                        this.enemyTurn(true);
+
+                        this.actionChosen = null;
+                    },
+
+                    enemyTurn(isDefended = false) {
+                        if (this.enemy.hp <= 0) return;
+
+                        let dmg = this.enemy.attack;
+                        if (isDefended) dmg = Math.floor(dmg / 2);
+
+                        this.player.hp -= dmg;
+                        if (this.player.hp < 0) this.player.hp = 0;
+
+                        this.messages.push(`${this.enemy.name} menyerang! Player menerima ${dmg} damage.`);
+
+                        if (this.player.hp <= 0) {
+                            this.messages.push("Player kalah... Game Over!");
+                        }
+                    },
+
+                    saveGame() {
+                        const data = {
+                            player: this.player,
+                            enemy: this.enemy
+                        };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "gameData.json";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        this.messages.push("Game berhasil disimpan!");
+                    },
+
+                    loadGame(event) {
+                        const file = event.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const data = JSON.parse(e.target.result);
+                                this.player = data.player;
+                                this.enemy = data.enemy;
+                                this.messages.push("Game berhasil dimuat!");
+                            } catch (err) {
+                                this.messages.push("Gagal memuat data.");
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
                 }
             }
-        }
     </script>
 </body>
 
